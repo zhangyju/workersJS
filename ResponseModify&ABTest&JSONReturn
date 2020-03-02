@@ -1,0 +1,50 @@
+addEventListener( "fetch" , event => {
+    event.respondWith(handleRequest(event.request))
+    })
+    
+async function handleRequest(request) {
+  const host = 'www.myzhangyujie.com';
+  let url = request.url;
+  // console.log(request.url);
+  let tmpurl = new URL(url);
+  // console.log(tmpurl);
+  // console.log(tmpurl.pathname)
+  if (tmpurl.pathname == '/') {
+    let cookie = request.headers.get('cookie');
+    // console.log(typeof cookie)
+    if(cookie.includes('group=control')) {
+      let newurl = 'https://' + host + '/welcome-en.html';
+      return fetch(newurl,request)
+    }
+    else if (cookie.includes('group=test')) {
+      let newurl = 'https://' + host + '/welcome-cn.html';
+      return fetch(newurl,request)
+    }
+    return fetch(request)
+  }
+  // console.log(request.url)
+  else if (url.includes('welcome')) {
+    let response = await fetch(request);
+    let body = await response.text();
+    // console.log(body);
+    if (body.includes('Welcome')) {
+      newbody = body.replace('Welcome', 'wELCOME');
+      // console.log(newbody);
+      return new Response(newbody, response)
+    }
+  }
+  else if (url.includes('jsontest')) {
+    let init = {
+        headers: {
+          'content-type': 'application/json;charset=UTF-8',
+        },
+    }
+    let someJSON = {
+        result: ['some', 'results'],
+        errors: null,
+        msg: 'this is some random json',
+    }
+    return new Response(JSON.stringify(someJSON), init)
+  }
+  return fetch(request)
+}
